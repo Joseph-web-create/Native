@@ -15,9 +15,9 @@ http.route({
       throw new Error("Missing Clerk secret");
     }
 
-    const svix_id = request.headers.get("svix_id");
-    const svix_signature = request.headers.get("svix_signature");
-    const svix_timestamp = request.headers.get("svix_timestamp");
+    const svix_id = request.headers.get("svix-id");
+    const svix_signature = request.headers.get("svix-signature");
+    const svix_timestamp = request.headers.get("svix-timestamp");
 
     if (!svix_id || !svix_signature || !svix_timestamp) {
       return new Response("Error occured -- no svix headers", { status: 400 });
@@ -58,6 +58,8 @@ http.route({
           clerkId: id,
           username: email.split("@")[0],
         });
+
+        console.log("User created successfully");
       } catch (error) {
         console.error("Error creating user", error);
         return new Response("Error creating user", { status: 500 });

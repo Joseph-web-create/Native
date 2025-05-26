@@ -15,7 +15,7 @@ export default defineSchema({
   }).index("by_clerk_id", ["clerkId"]),
 
   posts: defineTable({
-    userId: v.id("user"),
+    userId: v.id("users"),
     imageUrl: v.string(),
     storageId: v.id("_storage"),
     caption: v.optional(v.string()),
@@ -31,22 +31,22 @@ export default defineSchema({
     .index("by_user_and_post", ["userId", "postId"]),
 
   comments: defineTable({
-    userId: v.id("user"),
+    userId: v.id("users"),
     postId: v.id("post"),
     content: v.string(),
   }).index("by_post", ["postId"]),
 
   follows: defineTable({
     followerId: v.id("userId"),
-    followingId: v.id("user"),
+    followingId: v.id("users"),
   })
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
     .index("by_both", ["followerId", "followingId"]),
 
   notifications: defineTable({
-    receiverId: v.id("user"),
-    senderId: v.id("user"),
+    receiverId: v.id("users"),
+    senderId: v.id("users"),
     type: v.union(v.literal("like"), v.literal("comment"), v.literal("follow")),
     postId: v.optional(v.id("posts")),
     commentId: v.optional(v.id("comments")),

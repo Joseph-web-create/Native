@@ -19,8 +19,6 @@ import {
   View,
 } from "react-native";
 
-import * as FileSystem from "expo-file-system";
-
 export default function CreateScren() {
   const router = useRouter();
   const { user } = useUser();
@@ -31,7 +29,7 @@ export default function CreateScren() {
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images" ,
+      mediaTypes: "images",
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -40,8 +38,6 @@ export default function CreateScren() {
     if (!result.canceled) {
       setSelectImage(result.assets[0].uri);
     }
-
-    
   };
 
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
@@ -52,25 +48,22 @@ export default function CreateScren() {
 
     try {
       setIsloading(true);
-      console.log("📸 Starting share process...");
+
       const uploadUrl = await generateUploadUrl();
 
-      const uploadResult = await FileSystem.uploadAsync(
-        uploadUrl,
-        selectImage,
-        {
-          httpMethod: "POST",
-          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-          
-        }
-      );
+      const response = await fetch(selectImage);
 
-      console.log(uploadResult);
-      console.log(uploadUrl);
+      const blob = await response.blob();
 
-      if (uploadResult.status !== 200) throw new Error("Upload failed");
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": "image/jpeg" },
+        body: blob,
+      });
 
-      const { storageId } = JSON.parse(uploadResult.body);
+      if (!result.ok) throw new Error("Upload failed");
+
+      const { storageId } = await result.json();
 
       await createPost({
         storageId,
@@ -79,12 +72,11 @@ export default function CreateScren() {
 
       router.push("/(tabs)");
     } catch (error) {
-      console.log("Error sharing post", error);
+      console.error("❌ Error sharing post:", error);
     } finally {
       setIsloading(false);
     }
   };
-
 
   if (!selectImage) {
     return (
